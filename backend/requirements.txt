@@ -3,5 +3,6 @@ djangorestframework==3.14.0
 
 robotframework==6.1
 robotframework-requests==0.9.5
+robotframework-jsonlibrary==0.5
 
 tzdata
