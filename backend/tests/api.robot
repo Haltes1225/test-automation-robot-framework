@@ -50,24 +50,30 @@ Verify Articles
 
     ${json}=    Set Variable    ${response.json()}
     Log To Console    \n${json}
-#Verify Add/Delete Flow
-#    ${headers}=  Create Dictionary  Content-Type=application/json
-#
-#    ${response}=    GET    http://proxy/articles/    headers=${headers} expected_status=200
-#    ${exists}=    Evaluate    any(item['title'] == 'Ala' and item['content'] == 'makota' for item in $response.json())
-#    Should Be True    ${exists}    msg=Article Ala not found
-#
-#    Should Not Contain    ${response.json()}    {"title":"X","content":"X"}
-#
-#    ${response}=  POST  http://proxy/articles/  data={"title":"X","content":"X"}  headers=${headers}  expected_status=201
-#
-#    ${response}=    GET    http://proxy/articles/    headers=${headers} expected_status=200
-#    Should Contain    ${response.json()}    {"title":"X","content":"X"}
-#
-#    ${response}=  DELETE  http://proxy/articles/  data={"title":"X","content":"X"}  headers=${headers}  expected_status=201
-#
-#    ${response}=    GET    http://proxy/articles/    headers=${headers} expected_status=200
-#    Should Not Contain    ${response.json()}    {"title":"X","content":"X"}
+
+Verify Article Lifecycle
+    ${headers}=    Create Dictionary    Content-Type=application/json
+    ${article_title}=    Set Variable    Unique Lifecycle Test Article
+
+    ${resp_initial}=    GET    ${BASE_URL}    headers=${headers}    expected_status=200
+    ${titles_initial}=  Get Value From Json    ${resp_initial.json()}    $[*].title
+    List Should Not Contain Value    ${titles_initial}    ${article_title}
+
+    ${resp_post}=       POST    ${BASE_URL}    
+    ...    data={"title":"${article_title}", "content":"Lifecycle Content"}
+    ...    headers=${headers}    expected_status=201
+    
+    ${article_id}=      Set Variable    ${resp_post.json()}[id]
+
+    ${resp_after_post}=  GET    ${BASE_URL}    headers=${headers}    expected_status=200
+    ${titles_after}=     Get Value From Json    ${resp_after_post.json()}    $[*].title
+    List Should Contain Value    ${titles_after}    ${article_title}
+
+    DELETE    ${BASE_URL}${article_id}    headers=${headers}    expected_status=204
+
+    ${resp_final}=       GET    ${BASE_URL}    headers=${headers}    expected_status=200
+    ${titles_final}=     Get Value From Json    ${resp_final.json()}    $[*].title
+    List Should Not Contain Value    ${titles_final}    ${article_title}
 
 Verify Delete Non Existent Article
     ${headers}=    Create Dictionary    Content-Type=application/json
