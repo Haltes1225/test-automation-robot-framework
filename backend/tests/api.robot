@@ -105,7 +105,7 @@ Verify Article Lifecycle
     ${titles_final}=     Get Value From Json    ${resp_final.json()}    $[*].title
     List Should Not Contain Value    ${titles_final}    ${article_title}
 
-Verify Delete Non Existent Article
+Try To Delete Non Existent Article
     ${headers}=    Create Dictionary    Content-Type=application/json
 
     #1. Get the list of all articles
@@ -124,7 +124,17 @@ Verify Delete Non Existent Article
     ...    headers=${headers}    
     ...    expected_status=404
 
-Verify Add Article - No Title
+    Log To Console   \nResponse: ${del_response.json()}
+
+Try To Delete All Articles
+    ${headers}=    Create Dictionary    Content-Type=application/json
+
+    #1. Try to delete all articles
+    ${del_response}=    DELETE    ${BASE_URL}   headers=${headers}   expected_status=405
+
+    Log To Console    \nResponse: ${del_response.json()}
+
+Verify Post Article Validation - No Title
     ${headers}=  Create Dictionary  Content-Type=application/json
 
     #1. Try to create an article with no title
@@ -141,7 +151,7 @@ Verify Add Article - No Title
     
     Log To Console    \nResponse verified successfully: ${response.json()}
 
-Verify Post/Delete Flow - Empty Title
+Verify Post Article Validation - Empty Title
     ${headers}=  Create Dictionary  Content-Type=application/json
 
     #1. Try to create new article with title == empty string
@@ -158,7 +168,7 @@ Verify Post/Delete Flow - Empty Title
     
     Log To Console    \nResponse verified successfully: ${response.json()}
 
-Verify Post/Delete Flow - No Content
+Verify Post Article Validation - No Content
     ${headers}=  Create Dictionary  Content-Type=application/json
 
     #1. Try to create new article with no content
