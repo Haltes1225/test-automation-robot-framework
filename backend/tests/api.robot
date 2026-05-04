@@ -65,14 +65,14 @@ Verify List and Detail Data Consistency
     #5. Compare the data for chosen article from both endpoints
     Dictionaries Should Be Equal    ${article_from_list}    ${article_from_detail}
 
-Verify Articles
-    ${headers}=  Create Dictionary  Content-Type=application/json
-
-    #1. Get the list of all articles and Log it to console
-    ${response}=  GET  ${BASE_URL}   headers=${headers}  expected_status=200
-
-    ${json}=    Set Variable    ${response.json()}
-    Log To Console    \n${json}
+#Verify Articles
+#    ${headers}=  Create Dictionary  Content-Type=application/json
+#
+#    #1. Get the list of all articles and Log it to console
+#    ${response}=  GET  ${BASE_URL}   headers=${headers}  expected_status=200
+#
+#    ${json}=    Set Variable    ${response.json()}
+#    Log To Console    \n${json}
 
 Verify Article Lifecycle
     ${headers}=    Create Dictionary    Content-Type=application/json
@@ -123,3 +123,56 @@ Verify Delete Non Existent Article
     ${del_response}=    DELETE    ${BASE_URL}${non_existent_id}    
     ...    headers=${headers}    
     ...    expected_status=404
+
+Verify Add Article - No Title
+    ${headers}=  Create Dictionary  Content-Type=application/json
+
+    #1. Try to create an article with no title
+    ${response}=  POST  ${BASE_URL} 
+    ...    data={"content":"test"}  
+    ...    headers=${headers}  
+    ...    expected_status=400
+
+    #2. Define the expected error dictionary
+    ${expected_error}=    Create Dictionary    title=${{ ['This field is required.'] }}
+
+    #3. Compare the actual JSON response to the expected dictionary
+    Dictionaries Should Be Equal    ${response.json()}    ${expected_error}
+    
+    Log To Console    \nResponse verified successfully: ${response.json()}
+
+Verify Post/Delete Flow - Empty Title
+    ${headers}=  Create Dictionary  Content-Type=application/json
+
+    #1. Try to create new article with title == empty string
+    ${response}=  POST  ${BASE_URL} 
+    ...    data={"title":"","content":"test"}  
+    ...    headers=${headers}  
+    ...    expected_status=400
+
+    #2. Define the expected error dictionary
+    ${expected_error}=    Create Dictionary    title=${{ ['This field may not be blank.'] }}
+
+    #3. Compare the actual JSON response to the expected dictionary
+    Dictionaries Should Be Equal    ${response.json()}    ${expected_error}
+    
+    Log To Console    \nResponse verified successfully: ${response.json()}
+
+Verify Post/Delete Flow - No Content
+    ${headers}=  Create Dictionary  Content-Type=application/json
+
+    #1. Try to create new article with no content
+    ${response}=  POST  ${BASE_URL} 
+    ...    data={"title":"test"}  
+    ...    headers=${headers}  
+    ...    expected_status=400
+
+    #2. Define the expected error dictionary
+    ${expected_error}=    Create Dictionary    content=${{ ['This field is required.'] }}
+
+    #3. Compare the actual JSON response to the expected dictionary
+    Dictionaries Should Be Equal    ${response.json()}    ${expected_error}
+    
+    Log To Console    \nResponse verified successfully: ${response.json()}
+
+
